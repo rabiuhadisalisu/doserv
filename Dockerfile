@@ -13,7 +13,7 @@ USER appuser
 WORKDIR /home/appuser/app
 
 # Copy requirements.txt first (for efficient caching)
-COPY requirements.txt .
+RUN curl -o requirements.txt https://raw.githubusercontent.com/rabiuhadisalisu/xtx/main/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy your Python script 
