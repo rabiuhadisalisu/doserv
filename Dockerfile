@@ -1,31 +1,26 @@
-# Use the official Ubuntu image as the base image
-FROM ubuntu:latest
+# Use a smaller base image: Alpine Linux is a lightweight alternative to Ubuntu
+FROM python:3.11-alpine 
 
-# Install dependencies: ttyd, python, pip, curl, ca-certificates
-RUN apt-get update && \
-    apt-get install -y ttyd python3 python3-pip python3-venv curl ca-certificates && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install essential packages (including build dependencies for later steps)
+RUN apk add --no-cache --virtual .build-deps \
+    gcc musl-dev libffi-dev openssl-dev \
+    && pip install --upgrade pip \
+    && apk del .build-deps
 
-# Set the working directory
-WORKDIR /app
+# Create a non-root user and switch to it (for security)
+RUN adduser -D appuser
+USER appuser
+WORKDIR /home/appuser/app
 
-# Set environment variables
-ENV EMAIL=
-ENV PASSWORD=
+# Copy requirements.txt first (for efficient caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Create a virtual environment and install dependencies
-RUN python3 -m venv /venv
-RUN /venv/bin/pip install --upgrade pip
-RUN curl -o requirements.txt https://raw.githubusercontent.com/rabiuhadisalisu/xtx/main/requirements.txt
-RUN /venv/bin/pip install --no-cache-dir -r requirements.txt
+# Copy your Python script 
+COPY script.py .
 
-# Download the Python script
-RUN curl -o script.py https://raw.githubusercontent.com/rabiuhadisalisu/xtx/main/qual.py
-
-
-# Expose port 80
+# Expose the port
 EXPOSE 80
 
-# Start ttyd on port 80 to run the Python script within the virtual environment
-CMD ["sh", "-c", "nohup /venv/bin/python3 /app/script.py 2>&1 | ttyd -p 80 -t titleFixed=true sh -c 'tail -f /proc/self/fd/0' &"]
+# Use a more efficient CMD to start ttyd and the script
+CMD ["ttyd", "-p", "80", "-t", "titleFixed=true", "sh", "-c", "nohup /venv/bin/python3 /app/script.py 2>&1 | tail -f /proc/self/fd/0"]
