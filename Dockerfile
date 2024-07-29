@@ -24,4 +24,4 @@ COPY script.py .
 EXPOSE 80
 
 # Use a more efficient CMD to start ttyd and the script
-CMD ["ttyd", "-p", "80", "-t", "titleFixed=true", "sh", "-c", "nohup python3 /app/script.py 2>&1 | tail -f /proc/self/fd/0"]
+CMD ["ttyd", "-p", "80", "-t", "titleFixed=true", "sh", "-c", "nohup python3 script.py 2>&1 | tail -f /proc/self/fd/0"]
