@@ -13,11 +13,11 @@ USER appuser
 WORKDIR /home/appuser/app
 
 # Copy requirements.txt first (for efficient caching)
-RUN curl -o requirements.txt https://raw.githubusercontent.com/rabiuhadisalisu/xtx/main/requirements.txt
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy your Python script 
-RUN curl -o script.py https://raw.githubusercontent.com/rabiuhadisalisu/xtx/main/qual.py
+COPY script.py .
 
 # Expose the port
 EXPOSE 80
